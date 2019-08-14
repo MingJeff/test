@@ -28,6 +28,7 @@ docker_deploy(){
 	read -p "Please assign the node ID 请输入节点ID:" node_idof
 	echo $node_idof " is the new node ID"
 	docker run -d --name=ssrmu -e NODE_ID=$node_idof -e API_INTERFACE=glzjinmod -e MYSQL_HOST=35.185.164.17 -e MYSQL_USER=sspanel -e MYSQL_DB=sspanel -e MYSQL_PASS=60731240yym --network=host --log-opt max-size=50m --log-opt max-file=3 --restart=always fanvinga/docker-ssrmu && echo && echo "ssrmu deployed successfully" 
+}
 	
 #删除docker_ssrmu
 remove_ssrmu(){
@@ -88,7 +89,9 @@ case "$num" in
 esac
 }
 
-	
+
+
+
 
 
 start_menu
