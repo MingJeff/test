@@ -1,4 +1,7 @@
 #!/bin/bash
+
+
+#修改时区 Change Date
 date_setting(){
 	
 	cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
@@ -6,25 +9,59 @@ date_setting(){
 
 }
 
+#安装BBR
 download_bbr(){
 	wget -N --no-check-certificate "https://raw.githubusercontent.com/chiakge/Linux-NetSpeed/master/tcp.sh" && chmod +x tcp.sh && ./tcp.sh
 }
 
+
+#安装docker
 install_docker(){
 	apt-get install curl -y
 	docker version > /dev/null || curl -fsSL get.docker.com | bash
 	service docker restart
+}
+
+
+#初次对接数据库
+docker_deploy(){
+	read -p "Please assign the node ID 请输入节点ID:" node_idof
+	echo $node_idof " is the new node ID"
+	docker run -d --name=ssrmu -e NODE_ID=$node_idof -e API_INTERFACE=glzjinmod -e MYSQL_HOST=35.185.164.17 -e MYSQL_USER=sspanel -e MYSQL_DB=sspanel -e MYSQL_PASS=60731240yym --network=host --log-opt max-size=50m --log-opt max-file=3 --restart=always fanvinga/docker-ssrmu && echo && echo "ssrmu deployed successfully" 
+	
+#删除docker_ssrmu
+remove_ssrmu(){
+	docker rm -f ssrmu && echo "ssrmu removed sucessfully"
+}
+
+#添加新的cron管理docker
+edit_new_cron(){
+
+	read -p "Please assign the node ID 请输入节点ID:" node_idof
+	echo $node_idof " is the new node ID"
+	(crontab -l ; echo "0 */6 * * * docker rm -f ssrmu && docker run -d --name=ssrmu -e NODE_ID=$node_idof -e API_INTERFACE=glzjinmod -e MYSQL_HOST=35.185.164.17 -e MYSQL_USER=sspanel -e MYSQL_DB=sspanel -e MYSQL_PASS=60731240yym --network=host --log-opt max-size=50m --log-opt max-file=3 --restart=always fanvinga/docker-ssrmu" ) | crontab - | echo "A new crontab installed sucessfully" 
 
 }
+
+
+
 start_menu(){
 	clear
 	echo && echo -e "Across Script
-	——————————————————————————————————————————————
-	1. 修改时区 change date
-	2. 安装bbr脚本
-	3. 安装docker
-	4. Exit
-	——————————————————————————————————————————————"
+	———Preset———
+	1. 修改时区 Change Date
+	2. 安装BBR
+	
+	————Docker—————
+	3. 安装docker	
+	4. 初次对接数据库
+	5. 删除docker_ssrmu 
+
+	————Crontab————
+	6. 添加新的cron管理docker
+	
+	———————————————
+	7. Exit"
 
 echo
 read -p " 请输入数字 [0-11]:" num
@@ -36,10 +73,22 @@ case "$num" in
 	3)
 	install_docker;;
 	4)
+	docker_deploy;;
+	5)
+	remove_ssrmu;;
+	6)
+	edit_new_cron;;
+	7)
 	exit 1;;
+	*)
+	clear
+	echo -e "请输入正确数字"
+	sleep 2s
+	start_menu;;
 esac
-	
 }
 
-start_menu
+	
 
+
+start_menu
