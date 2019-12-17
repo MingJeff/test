@@ -40,11 +40,24 @@ edit_new_cron(){
 
 	read -p "Please assign the node ID 请输入节点ID:" node_idof
 	echo $node_idof " is the new node ID"
-	(crontab -l ; echo "0 */6 * * * docker rm -f ssrmu && docker run -d --name=ssrmu -e NODE_ID=$node_idof -e API_INTERFACE=glzjinmod -e MYSQL_HOST=35.185.164.17 -e MYSQL_USER=sspanel -e MYSQL_DB=sspanel -e MYSQL_PASS=60731240yym --network=host --log-opt max-size=50m --log-opt max-file=3 --restart=always fanvinga/docker-ssrmu" ) | crontab - | echo "A new crontab installed sucessfully" 
+	(crontab -l ; echo "0 */6 * * * docker rm -f ssrmu && docker run -d --name=ssrmu -e NODE_ID=$node_idof -e API_INTERFACE=glzjinmod -e MYSQL_HOST=35.185.164.17 -e MYSQL_USER=sspanel -e MYSQL_DB=sspanel -e MYSQL_PASS=60731240yym --network=host --log-opt max-size=50m --log-opt max-file=3 --restart=always fanvinga/docker-ssrmu" ) | crontab - | echo "A new crontab with Node ID $node_idof installed sucessfully" 
 
 }
 
 
+one_click_install_for_across(){
+	read -p "Please assign the node ID 请输入节点ID:" node_idof
+	echo $node_idof " is the new node ID"
+	docker run -d --name=ssrmu -e NODE_ID=$node_idof -e API_INTERFACE=glzjinmod -e MYSQL_HOST=35.185.164.17 -e MYSQL_USER=sspanel -e MYSQL_DB=sspanel -e MYSQL_PASS=60731240yym --network=host --log-opt max-size=50m --log-opt max-file=3 --restart=always fanvinga/docker-ssrmu && echo && echo "ssrmu deployed successfully" 
+	(crontab -l ; echo "0 */6 * * * docker rm -f ssrmu && docker run -d --name=ssrmu -e NODE_ID=$node_idof -e API_INTERFACE=glzjinmod -e MYSQL_HOST=35.185.164.17 -e MYSQL_USER=sspanel -e MYSQL_DB=sspanel -e MYSQL_PASS=60731240yym --network=host --log-opt max-size=50m --log-opt max-file=3 --restart=always fanvinga/docker-ssrmu" ) | crontab - | echo "A new crontab with Node ID $node_idof installed sucessfully"
+
+}
+
+one_click_uninstall_for_across(){
+	$(remove_ssrmu)
+	crontab -r | echo "crontab clear now"
+	echo "remove ssrmu and crontab clear sucessfully"
+}
 
 start_menu(){
 	clear
@@ -57,12 +70,13 @@ start_menu(){
 	3. 安装docker	
 	4. 初次对接数据库
 	5. 删除docker_ssrmu 
-
-	————Crontab————
 	6. 添加新的cron管理docker
-	
+
+	————One Click————
+	7. 一键安装
+	8. 一键删除
 	———————————————
-	7. Exit"
+	9. Exit"
 
 echo
 read -p " 请输入数字 [0-11]:" num
@@ -80,6 +94,10 @@ case "$num" in
 	6)
 	edit_new_cron;;
 	7)
+	one_click_install_for_across;;
+	8)
+	one_click_uninstall_for_across;;
+	9)
 	exit 1;;
 	*)
 	clear
@@ -88,6 +106,7 @@ case "$num" in
 	start_menu;;
 esac
 }
+
 
 
 
