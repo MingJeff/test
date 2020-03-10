@@ -135,4 +135,3 @@ esac
 
 date_setting
 start_menu
-
