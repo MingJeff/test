@@ -58,6 +58,7 @@ one_click_install_for_across(){
 
 }
 
+
 one_click_uninstall_for_across(){
     $(remove_ssrmu)
     crontab -r | echo "crontab clear now"
@@ -65,10 +66,15 @@ one_click_uninstall_for_across(){
 }
 
 v2ray_sspanel_install(){
-    apt install unzip
-    mkdir v2ray-agent && cd v2ray-agent && curl https://raw.githubusercontent.com/hulisang/v2ray-sspanel-v3-mod_Uim-plugin/master/install.sh -o install.sh && chmod +x install.sh && chmod +x install.sh && bash install.sh
+   if [[ -d /root/v2ray-agent ]]
+	then 
+		cd v2ray-agent 
+	else
+	    mkdir v2ray-agent && cd v2ray-agent && curl https://raw.githubusercontent.com/hulisang/v2ray-sspanel-v3-mod_Uim-plugin/master/install.sh -o install.sh && chmod +x install.sh  
+	fi
+   
     read -p "Please assign the node ID 请输入节点ID:" node_idof 
-
+   
     printf '1\n3\nhttps://goacross2020.com\nacrossthegreatwall\n6\n$node_idof\n2333\n0' |./install.sh 2>/dev/null && echo "A new v2ray-agent has been installed with NodeID $node_idof"
 }
 
@@ -100,7 +106,7 @@ start_menu(){
     9. Exit"
 
     echo
-    read -p " 请输入数字" num
+    read -p " 请输入数字:" num
     case "$num" in 
     1)
     date_setting;;
