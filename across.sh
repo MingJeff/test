@@ -65,6 +65,7 @@ one_click_uninstall_for_across(){
     echo "remove ssrmu and crontab clear sucessfully"
 }
 
+
 v2ray_sspanel_install(){
    if [[ -d /root/v2ray-agent ]]
 	then 
@@ -80,6 +81,13 @@ v2ray_sspanel_install(){
 
 
 
+download_dockercompose(){
+	mkdir proxy
+	cd proxy
+	wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/docker-compose.yaml" && chmod 777 docker-compose.yaml
+}
+	
+
 
 
 start_menu(){
@@ -94,12 +102,15 @@ start_menu(){
     4.删除docker_v2ray
 
     ————Docker—————
-    13. 安装docker 
+    5.下载docker-compose
+    6.下载XrayR
+    7.修改XrayR/config
+
+
+    ————Legacy————
     14. 初次对接数据库
     15. 删除docker_ssrmu 
     16. 添加新的cron管理docker
-
-    ————One Click————
     17. 一键安装ssr
     18. 一键删除ssr
     ———————————————
@@ -116,6 +127,11 @@ start_menu(){
     v2ray_sspanel_install;;
     4)
     remove_v2ray;;
+    5)
+    download_dockercompose;;
+    6)
+    
+    
     13)
     install_docker;;
     14)
