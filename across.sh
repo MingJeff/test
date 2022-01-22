@@ -87,7 +87,23 @@ download_dockercompose(){
 	wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/docker-compose.yaml" && chmod 777 docker-compose.yaml
 }
 	
+download_XrayR(){
+	git clone https://github.com/XrayR-project/XrayR-release
+	mv XrayR-release XrayR
+}
 
+edit_configyml(){
+	cd XrayR/config
+	wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/config.yml" && chmod 777 config.yml
+	read -p "Please assign the node ID 请输入节点ID:" node_idof 
+	sed -i s/10086/'$node_idof'/g config.yml
+}
+
+start_dockercompose(){
+	cd ~/proxy
+	docker rm -f v2rayagent_v2ray_1
+	docker-compose up -d
+}
 
 
 start_menu(){
@@ -105,7 +121,7 @@ start_menu(){
     5.下载docker-compose
     6.下载XrayR
     7.修改XrayR/config
-
+    8.启动docker-compose
 
     ————Legacy————
     14. 初次对接数据库
@@ -130,6 +146,11 @@ start_menu(){
     5)
     download_dockercompose;;
     6)
+    download_XrayR;;
+    7)
+    edit_configyml;;
+    8)
+    start_dockercompose;;
     
     
     13)
