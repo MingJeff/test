@@ -106,6 +106,11 @@ start_dockercompose(){
 }
 
 one_click_install_XrayR(){
+	$(download_dockercompose)
+	$(download_XrayR)
+	$(edit_configyml)
+	$(start_dockercompose)
+
 }
 
 start_menu(){
