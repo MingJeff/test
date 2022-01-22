@@ -88,6 +88,7 @@ download_dockercompose(){
 }
 	
 download_XrayR(){
+	cd proxy
 	git clone https://github.com/XrayR-project/XrayR-release
 	mv XrayR-release XrayR
 }
@@ -100,7 +101,7 @@ edit_configyml(){
 }
 
 start_dockercompose(){
-	cd ../..
+	cd ~/proxy
 	docker rm -f v2rayagent_v2ray_1
 	docker-compose up -d
 }
