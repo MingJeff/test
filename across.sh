@@ -100,11 +100,13 @@ edit_configyml(){
 }
 
 start_dockercompose(){
-	cd ~/proxy
+	cd ../..
 	docker rm -f v2rayagent_v2ray_1
 	docker-compose up -d
 }
 
+one_click_install_XrayR(){
+}
 
 start_menu(){
     clear
@@ -122,7 +124,9 @@ start_menu(){
     6.下载XrayR
     7.修改XrayR/config
     8.启动docker-compose
-
+    9.一键XrayR
+    
+    
     ————Legacy————
     14. 初次对接数据库
     15. 删除docker_ssrmu 
@@ -151,7 +155,8 @@ start_menu(){
     edit_configyml;;
     8)
     start_dockercompose;;
-    
+    9)
+    one_click_install_XrayR;;
     
     13)
     install_docker;;
