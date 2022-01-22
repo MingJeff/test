@@ -94,7 +94,7 @@ download_XrayR(){
 }
 
 edit_configyml(){
-	cd XrayR/config
+	cd XrayR/config/
 	wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/config.yml" && chmod 777 config.yml
 	read -p "Please assign the node ID 请输入节点ID:" node_idof 
 	sed -i 's/10086/'$node_idof'/g' config.yml
