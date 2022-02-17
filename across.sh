@@ -15,11 +15,14 @@ download_bbr(){
 }
 
 
-#安装docker
+#同时安装docker和docker-compose
 install_docker(){
     apt-get install curl -y
     docker version > /dev/null || curl -fsSL get.docker.com | bash
     service docker restart
+    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
 }
 
 
@@ -126,7 +129,7 @@ start_menu(){
 
 
     ————Docker—————
-    4.安装docker
+    4.安装docker& docker-compose
     5.下载docker-compose
     6.下载XrayR
     7.修改XrayR/config
