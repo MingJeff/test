@@ -123,9 +123,10 @@ start_menu(){
     
     ————V2ray—————
     3.安装v2ray-agent
-    4.删除docker_v2ray
+
 
     ————Docker—————
+    4.安装docker
     5.下载docker-compose
     6.下载XrayR
     7.修改XrayR/config
@@ -152,7 +153,7 @@ start_menu(){
     3)
     v2ray_sspanel_install;;
     4)
-    remove_v2ray;;
+    install_docker;;
     5)
     download_dockercompose;;
     6)
@@ -164,8 +165,7 @@ start_menu(){
     9)
     one_click_install_XrayR;;
     
-    13)
-    install_docker;;
+
     14)
     docker_deploy;;
     15)
