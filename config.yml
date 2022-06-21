@@ -15,7 +15,7 @@ Nodes:
   -
     PanelType: "SSpanel" # Panel type: SSpanel, V2board, PMpanel, , Proxypanel
     ApiConfig:
-      ApiHost: "https://goacross2020.com"
+      ApiHost: "https://goacross2021.com"
       ApiKey: "acrossthegreatwall"
       NodeID: 10086
       NodeType: V2ray # Node type: V2ray, Shadowsocks, Trojan, Shadowsocks-Plugin
