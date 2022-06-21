@@ -93,8 +93,8 @@ download_dockercompose(){
 	
 download_XrayR(){
 	cd ~/proxy
-	git clone https://github.com/XrayR-project/XrayR-release
-	mv XrayR-release XrayR
+	git clone https://github.com/MingJeff/XrayR
+	
 }
 
 edit_configyml(){
