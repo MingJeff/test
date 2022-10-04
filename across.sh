@@ -1,4 +1,5 @@
 #!/bin/bash
+#下载地址：wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" && chmod +x across.sh && ./across.sh
 
 
 #修改时区 Change Date
@@ -84,6 +85,9 @@ v2ray_sspanel_install(){
 }
 
 
+	
+
+
 
 download_dockercompose(){
 	mkdir proxy
@@ -118,6 +122,19 @@ one_click_install_XrayR(){
 
 }
 
+X2rayR_script_install(){
+    git clone https://github.com/Miku-Miku-Miku-Miku/XrayR-script
+    cd XrayR-script/config
+    wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/config.yml" && chmod 777 config.yml
+    read -p "Please assign the node ID 请输入节点ID:" node_idof 
+    sed -i 's/10086/'$node_idof'/g' config.yml
+    cd ..
+    docker-compose up -d
+}
+
+
+
+
 start_menu(){
     clear
     echo && echo -e "Across Script
@@ -136,6 +153,9 @@ start_menu(){
     7.修改XrayR/config
     8.启动docker-compose
     9.一键XrayR
+    
+    ————XrayRScript————
+    10.一键安装XrayR-Script
     
     
     ————Legacy————
@@ -169,6 +189,10 @@ start_menu(){
     9)
     one_click_install_XrayR;;
     
+    
+    10)
+    X2rayR_script_install;;
+	
 
     14)
     docker_deploy;;
