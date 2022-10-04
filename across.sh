@@ -165,7 +165,7 @@ start_menu(){
     17. 一键安装ssr
     18. 一键删除ssr
     ———————————————
-    9. Exit"
+    19. Exit"
 
     echo
     read -p " 请输入数字:" num
@@ -204,7 +204,7 @@ start_menu(){
     one_click_install_for_across;;
     18)
     one_click_uninstall_for_across;;
-    9)
+    19)
     exit 1;;
     *)
     clear
