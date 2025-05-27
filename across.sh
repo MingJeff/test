@@ -2,6 +2,111 @@
 #下载地址：wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" && chmod +x across.sh && ./across.sh
 
 
+# 自动更新检测：超过7天未运行，询问是否更新
+check_and_update_script() {
+    SCRIPT_PATH="$0"
+    LAST_RUN_FILE="/tmp/.across_last_run"
+    REMOTE_URL="https://raw.github.com/MingJeff/test/Across/across.sh"
+
+    NOW=$(date +%s)
+
+    if [ ! -f "$LAST_RUN_FILE" ]; then
+        echo "$NOW" > "$LAST_RUN_FILE"
+        return
+    fi
+
+    LAST=$(cat "$LAST_RUN_FILE")
+    DIFF=$(( (NOW - LAST) / 86400 ))
+
+    if [ $DIFF -ge 7 ]; then
+        echo "检测到本脚本已 $DIFF 天未更新。是否现在更新？"
+        echo "1. 更新"
+        echo "2. 不更新"
+        read -p "请输入选项 [1/2]: " opt
+        if [ "$opt" = "1" ]; then
+            echo "开始更新..."
+            wget -N --no-check-certificate "$REMOTE_URL" -O "$SCRIPT_PATH"
+            chmod +x "$SCRIPT_PATH"
+            echo "$NOW" > "$LAST_RUN_FILE"
+            echo "更新完成，重新运行脚本..."
+            exec "$SCRIPT_PATH"
+        else
+            echo "跳过更新。"
+        fi
+    fi
+
+    echo "$NOW" > "$LAST_RUN_FILE"
+}
+
+check_and_update_script
+
+# 显示 XrayR-script 当前 NodeID
+show_nodeid() {
+    if docker container ls | grep -q xrayr-script; then
+        config_path="/root/XrayR-script/config/config.yml"
+        if [ -f "$config_path" ]; then
+            nodeid=$(grep 'NodeID:' "$config_path" | awk '{print $2}')
+            echo "当前运行中的 XrayR-script 配置 NodeID: $nodeid"
+        else
+            echo "未找到 config.yml 配置文件。"
+        fi
+    else
+        echo "未检测到 XrayR-script 容器运行。"
+    fi
+    read -p "按回车键继续..."
+}
+
+# 设置 root 密码
+set_root_password(){
+    read -s -p "请输入你想设置的 root 密码: " rootpasswd
+    echo
+    read -s -p "请再次输入密码确认: " rootpasswd2
+    echo
+
+    if [ "$rootpasswd" != "$rootpasswd2" ]; then
+        echo "两次输入的密码不一致，退出脚本。"
+        exit 1
+    fi
+
+    echo "root:$rootpasswd" | chpasswd
+    echo "已成功设置 root 密码。"
+    echo
+    echo "请妥善保存您的密码，以下是您刚刚设置的 root 密码："
+    echo
+    echo "root 密码：$rootpasswd"
+    echo
+}
+
+# 添加 SSH 端口 22
+add_ssh_port_22(){
+    SSHD_CONFIG="/etc/ssh/sshd_config"
+    cp $SSHD_CONFIG ${SSHD_CONFIG}.bak
+    sed -i 's/^#\?\s*PermitRootLogin.*/PermitRootLogin yes/' $SSHD_CONFIG
+    sed -i 's/^#\?\s*PasswordAuthentication.*/PasswordAuthentication yes/' $SSHD_CONFIG
+    if ! grep -q "^Port 22" $SSHD_CONFIG; then
+        echo "Port 22" >> $SSHD_CONFIG
+        echo "已添加 Port 22"
+    else
+        echo "Port 22 已存在，未重复添加。"
+    fi
+
+    if command -v systemctl &> /dev/null; then
+        systemctl restart ssh || systemctl restart sshd
+    else
+        service ssh restart || service sshd restart
+    fi
+
+    echo "SSH 服务已重启完成，可使用原端口或 22 登录。"
+}
+
+# 一键删除所有 Docker 容器
+remove_all_docker_containers() {
+    docker rm -f $(docker ps -aq) && echo "已删除全部 Docker 容器"
+    read -p "按回车键继续..."
+}
+
+# -------------------------- 以上更新于2025/05/28 --------------------------
+
 #修改时区 Change Date
 date_setting(){
     
@@ -139,79 +244,64 @@ start_menu(){
     clear
     echo && echo -e "Across Script
     ———Preset———
-    1. 修改时区 Change Date
+    1. 修改时区
     2. 安装BBR
-    
-    ————V2ray—————
-    3.安装v2ray-agent
 
+    ————系统设置————
+    3. 设置 root 密码
+    4. 添加 SSH 端口 22
+
+    ————V2ray—————
+    5. 安装v2ray-agent
 
     ————Docker—————
-    4.安装docker& docker-compose
-    5.下载docker-compose
-    6.下载XrayR
-    7.修改XrayR/config
-    8.启动docker-compose
-    9.一键XrayR
-    
+    6. 安装docker& docker-compose
+    7. 下载docker-compose
+    8. 下载XrayR
+    9. 修改XrayR/config
+    10. 启动docker-compose
+    11. 一键安装XrayR
+
     ————XrayRScript————
-    10.一键安装XrayR-Script
-    
-    
+    12. 一键安装XrayR-Script
+    13. 显示当前XrayR-script NodeID
+    14. 删除全部 Docker 容器
+
     ————Legacy————
-    14. 初次对接数据库
-    15. 删除docker_ssrmu 
-    16. 添加新的cron管理docker
-    17. 一键安装ssr
-    18. 一键删除ssr
+    50. 初次对接数据库
+    51. 删除docker_ssrmu
+    52. 添加新的cron管理docker
+    53. 一键安装ssr
+    54. 一键删除ssr
+
     ———————————————
-    19. Exit"
+    99. 退出"
 
     echo
-    read -p " 请输入数字:" num
-    case "$num" in 
-    1)
-    date_setting;;
-    2)
-    download_bbr;;
-    3)
-    v2ray_sspanel_install;;
-    4)
-    install_docker;;
-    5)
-    download_dockercompose;;
-    6)
-    download_XrayR;;
-    7)
-    edit_configyml;;
-    8)
-    start_dockercompose;;
-    9)
-    one_click_install_XrayR;;
-    
-    
-    10)
-    X2rayR_script_install;;
-	
-
-    14)
-    docker_deploy;;
-    15)
-    remove_ssrmu;;
-    16)
-    edit_new_cron;;
-    17)
-    one_click_install_for_across;;
-    18)
-    one_click_uninstall_for_across;;
-    19)
-    exit 1;;
-    *)
-    clear
-    echo -e "请输入正确数字"
-    sleep 2s
-    start_menu;;
-esac
+    read -p " 请输入数字: " num
+    case "$num" in
+    1) date_setting;;
+    2) download_bbr;;
+    3) set_root_password;;
+    4) add_ssh_port_22;;
+    5) v2ray_sspanel_install;;
+    6) install_docker;;
+    7) download_dockercompose;;
+    8) download_XrayR;;
+    9) edit_configyml;;
+    10) start_dockercompose;;
+    11) one_click_install_XrayR;;
+    12) X2rayR_script_install;;
+    13) show_nodeid;;
+    14) remove_all_docker_containers;;
+    50) docker_deploy;;
+    51) remove_ssrmu;;
+    52) edit_new_cron;;
+    53) one_click_install_for_across;;
+    54) one_click_uninstall_for_across;;
+    99) exit 1;;
+    *) clear; echo -e "请输入正确数字"; sleep 2s; start_menu;;
+    esac
 }
 
 date_setting
