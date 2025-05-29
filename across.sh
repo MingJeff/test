@@ -5,11 +5,10 @@
 
 # 手动更新脚本
 manual_update_script() {
-    echo "当前脚本路径：$0"
-    echo "开始下载并覆盖..."
-    wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" -O "$0"
+    echo "正在手动更新脚本..."
+    wget -N --no-check-certificate "https://raw.githubusercontent.com/MingJeff/test/Across/across.sh" -O "$0"
     chmod +x "$0"
-    echo "已覆盖，重启运行中..."
+    echo "更新完成，正在重新启动脚本..."
     exec "$0"
 }
 
