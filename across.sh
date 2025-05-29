@@ -1,9 +1,12 @@
 #!/bin/bash
 #下载地址：wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" && chmod +x across.sh && ./across.sh
 
+# 手动更新脚本
 manual_update_script() {
     echo "正在手动更新脚本..."
-    wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" -O "$0" && chmod +x "$0" && exec "$0"
+    wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" -O "$0"
+    chmod +x "$0"
+    exec "$0"
 }
 
 # 自动更新检测：超过7天未运行，询问是否更新
