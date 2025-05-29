@@ -1,6 +1,10 @@
 #!/bin/bash
 #下载地址：wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" && chmod +x across.sh && ./across.sh
 
+manual_update_script() {
+    echo "正在手动更新脚本..."
+    wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" -O "$0" && chmod +x "$0" && exec "$0"
+}
 
 # 自动更新检测：超过7天未运行，询问是否更新
 check_and_update_script() {
@@ -243,6 +247,7 @@ X2rayR_script_install(){
 start_menu(){
     clear
     echo && echo -e "Across Script
+    0. 手动更新脚本
     ———Preset———
     1. 修改时区
     2. 安装BBR
@@ -280,6 +285,7 @@ start_menu(){
     echo
     read -p " 请输入数字: " num
     case "$num" in
+    0) manual_update_script;;
     1) date_setting;;
     2) download_bbr;;
     3) set_root_password;;
