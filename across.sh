@@ -139,15 +139,26 @@ download_bbr(){
 }
 
 
-#同时安装docker和docker-compose
+# 同时安装 Docker 和 Docker Compose
 install_docker(){
-    apt-get install curl -y
-    docker version > /dev/null || curl -fsSL get.docker.com | bash
-    service docker restart
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+    apt-get update
+    apt-get install -y curl ca-certificates gnupg lsb-release
 
+    if ! command -v docker &>/dev/null; then
+        curl -fsSL https://get.docker.com | bash
+        systemctl start docker
+        systemctl enable docker
+    fi
 
+    if ! command -v docker-compose &>/dev/null; then
+        curl -L "https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+        ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+    fi
+
+    echo "✅ Docker 和 Docker Compose 安装完成"
+    docker --version
+    docker-compose --version
 }
 
 
