@@ -5,12 +5,14 @@
 
 # 手动更新脚本
 manual_update_script() {
-    echo "正在手动更新脚本..."
+    echo "当前脚本路径：$0"
+    echo "开始下载并覆盖..."
     wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/across.sh" -O "$0"
     chmod +x "$0"
-    echo "更新完成，正在重新启动脚本..."
+    echo "已覆盖，重启运行中..."
     exec "$0"
 }
+
 
 # 自动更新检测：超过7天未运行，询问是否更新
 check_and_update_script() {
