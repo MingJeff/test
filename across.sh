@@ -12,6 +12,15 @@ manual_update_script() {
     exec "$0"
 }
 
+ manual_update_script123() {
+    echo "正在手动更新脚本..."
+    tmpfile=$(mktemp /tmp/across_update_XXXX.sh)
+    curl -fsSL "https://raw.githubusercontent.com/MingJeff/test/Across/across.sh?ts=$(date +%s)" -o "$tmpfile"
+    chmod +x "$tmpfile"
+    echo "更新完成，正在重新启动脚本..."
+    exec "$tmpfile"
+}
+
 
 
 
