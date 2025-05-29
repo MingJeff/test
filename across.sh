@@ -6,11 +6,13 @@
 # 手动更新脚本
 manual_update_script() {
     echo "正在手动更新脚本..."
-    wget -N --no-check-certificate "https://raw.githubusercontent.com/MingJeff/test/Across/across.sh" -O "$0"
+    wget -N --no-check-certificate "https://raw.githubusercontent.com/MingJeff/test/Across/across.sh?ts=$(date +%s)" -O "$0"
     chmod +x "$0"
     echo "更新完成，正在重新启动脚本..."
     exec "$0"
 }
+
+
 
 
 # 自动更新检测：超过7天未运行，询问是否更新
