@@ -140,26 +140,29 @@ download_bbr(){
 
 
 # 同时安装 Docker 和 Docker Compose
-install_docker(){
-    apt-get update
-    apt-get install -y curl ca-certificates gnupg lsb-release
+install_docker() {
+    apt update -y
+    apt install -y ca-certificates curl gnupg lsb-release apt-transport-https
 
-    if ! command -v docker &>/dev/null; then
-        curl -fsSL https://get.docker.com | bash
-        systemctl start docker
-        systemctl enable docker
-    fi
+    # 添加 Docker 官方 GPG Key
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
-    if ! command -v docker-compose &>/dev/null; then
-        curl -L "https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
-        ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-    fi
+    # 设置 Docker 仓库源
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
 
-    echo "✅ Docker 和 Docker Compose 安装完成"
-    docker --version
-    docker-compose --version
+    # 安装 Docker 和新版 Compose 插件
+    apt update -y
+    apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+    # 启动并设置开机启动
+    systemctl enable docker
+    systemctl start docker
+
+    echo "✅ Docker 和 docker compose 安装完成"
 }
+
 
 
 #初次对接数据库
