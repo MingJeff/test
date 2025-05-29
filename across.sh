@@ -141,27 +141,61 @@ download_bbr(){
 
 # 同时安装 Docker 和 Docker Compose
 install_docker() {
-    apt update -y
-    apt install -y ca-certificates curl gnupg lsb-release apt-transport-https
+    OS_VERSION=$(lsb_release -rs)
 
-    # 添加 Docker 官方 GPG Key
-    mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    if [[ "$OS_VERSION" == "16.04" ]]; then
+        echo "⚠️ 检测到 Ubuntu 16.04，使用兼容模式安装 Docker + Compose"
 
-    # 设置 Docker 仓库源
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+        apt update -y
+        apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 
-    # 安装 Docker 和新版 Compose 插件
-    apt update -y
-    apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
-    # 启动并设置开机启动
-    systemctl enable docker
-    systemctl start docker
+        add-apt-repository \
+           "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+           xenial \
+           stable"
 
-    echo "✅ Docker 和 docker compose 安装完成"
+        apt update -y
+
+        apt install -y docker-ce=5:18.09.7~3-0~ubuntu-xenial \
+                       docker-ce-cli=5:18.09.7~3-0~ubuntu-xenial \
+                       containerd.io
+
+        service docker start || systemctl start docker
+
+        COMPOSE_VERSION="1.29.2"
+        curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
+            -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+
+        echo ""
+        echo "✅ Ubuntu 16.04 安装完成，Docker 与 docker-compose 已就绪。"
+
+    else
+        echo "🟢 检测到系统版本为 $OS_VERSION，使用标准流程安装 Docker + Compose"
+
+        apt update -y
+        apt install -y ca-certificates curl gnupg lsb-release apt-transport-https
+
+        mkdir -p /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+        echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+        https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+
+        apt update -y
+        apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+        systemctl enable docker
+        systemctl start docker
+
+        echo ""
+        echo "✅ Docker 和 docker compose 安装完成"
+    fi
 }
+
 
 
 
