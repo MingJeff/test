@@ -55,8 +55,11 @@ check_and_update_script
 
 
 
-# 显示 XrayR-script 当前 NodeID
+# 显示 XrayR-script 当前 NodeID 和容器状态
 show_nodeid() {
+    echo "当前运行的 Docker 容器列表："
+    docker container ls
+    echo
     if docker container ls --format '{{.Image}}' | grep -q mikumiku1/xrayr; then
         config_path="/root/XrayR-script/config/config.yml"
         if [ -f "$config_path" ]; then
