@@ -283,6 +283,7 @@ start_menu(){
 
     ———————————————
     99. 退出"
+    ababab
 
     echo
     read -p " 请输入数字: " num
