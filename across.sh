@@ -4,14 +4,26 @@
 
 
 # 手动更新脚本
-manual_update_script() {
+manual_update_scriptttt() {
     echo "正在手动更新脚本..."
     wget --no-check-certificate "https://raw.githubusercontent.com/MingJeff/test/Across/across.sh?ts=$(date +%s)" -O "$0"
     chmod +x "$0"
     echo "更新完成，正在重新启动脚本..."
     exec "$0"
 }
-
+manual_update_script() {
+    echo "正在手动更新脚本..."
+    tmpfile=$(mktemp)
+    curl -fsSL "https://raw.githubusercontent.com/MingJeff/test/Across/across.sh?ts=$(date +%s)" -o "$tmpfile"
+    if [ $? -ne 0 ]; then
+        echo "❌ 下载失败，保留旧版本脚本。"
+        rm -f "$tmpfile"
+        return
+    fi
+    chmod +x "$tmpfile"
+    echo "✅ 脚本已更新，将重新启动..."
+    exec "$tmpfile"
+}
 
 
 
