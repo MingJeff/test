@@ -282,8 +282,8 @@ start_menu(){
     54. 一键删除ssr
 
     ———————————————
-    99. 退出"
-    ababab
+    99. 退出ssdf "
+   
 
     echo
     read -p " 请输入数字: " num
