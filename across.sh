@@ -289,7 +289,7 @@ start_menu(){
     54. 一键删除ssr
 
     ———————————————
-    99. 退出byebye"
+    99. 退出byebye123"
    
 
     echo
