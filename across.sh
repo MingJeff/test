@@ -44,9 +44,11 @@ check_and_update_script() {
 
 check_and_update_script
 
+
+
 # 显示 XrayR-script 当前 NodeID
 show_nodeid() {
-    if docker container ls | grep -q xrayr-script; then
+    if docker container ls --format '{{.Image}}' | grep -q mikumiku1/xrayr; then
         config_path="/root/XrayR-script/config/config.yml"
         if [ -f "$config_path" ]; then
             nodeid=$(grep 'NodeID:' "$config_path" | awk '{print $2}')
