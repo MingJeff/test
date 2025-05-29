@@ -245,12 +245,21 @@ one_click_install_XrayR(){
 
 }
 
+
 X2rayR_script_install(){
+    if ! command -v git &> /dev/null; then
+        echo "未检测到 git，正在安装..."
+        apt-get update && apt-get install git -y
+    fi
+
     git clone https://github.com/Miku-Miku-Miku-Miku/XrayR-script
     cd XrayR-script/config
+
     wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/config.yml" && chmod 777 config.yml
+
     read -p "Please assign the node ID 请输入节点ID:" node_idof 
     sed -i 's/10086/'$node_idof'/g' config.yml
+
     cd ..
     docker-compose up -d
 }
