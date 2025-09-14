@@ -20,10 +20,19 @@ manual_update_script() {
         rm -f "$tmpfile"
         return
     fi
+
     chmod +x "$tmpfile"
-    echo "✅ 脚本已更新，将重新启动..."
-    exec "$tmpfile"
+
+    # 获取当前脚本的绝对路径
+    script_path=$(readlink -f "$0")
+
+    # 替换当前脚本
+    cp "$tmpfile" "$script_path"
+
+    echo "✅ 脚本已更新并覆盖旧版本，正在重新启动..."
+    exec "$script_path"
 }
+
 
 
 
