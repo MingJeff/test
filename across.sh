@@ -346,6 +346,47 @@ add_ssh_pubkey() {
     read -p "按回车键继续..."
 }
 
+# 判断是否只允许密钥登录
+only_allow_ssh_key_login() {
+    echo "🔍 正在检查是否存在公钥..."
+    if [ ! -s ~/.ssh/authorized_keys ]; then
+        echo "❌ 没有找到有效公钥，无法关闭密码登录。"
+        read -p "按回车键返回菜单..." 
+        return
+    fi
+
+    echo "✅ 已检测到公钥，当前文件为 ~/.ssh/authorized_keys"
+    echo "是否要关闭密码登录，仅保留密钥登录？（谨慎操作，确保你已经测试过密钥可以登录）"
+    echo "1. 是，只允许密钥登录"
+    echo "2. 否，保留密码登录"
+
+    read -p "请输入选项 [1/2]: " opt
+    if [ "$opt" != "1" ]; then
+        echo "⏭️ 跳过修改，返回菜单"
+        return
+    fi
+
+    SSHD_CONFIG="/etc/ssh/sshd_config"
+    cp $SSHD_CONFIG ${SSHD_CONFIG}.bak
+
+    sed -i 's/^#\?\s*PasswordAuthentication.*/PasswordAuthentication no/' $SSHD_CONFIG
+    sed -i 's/^#\?\s*PermitRootLogin.*/PermitRootLogin prohibit-password/' $SSHD_CONFIG
+    sed -i 's/^#\?\s*PubkeyAuthentication.*/PubkeyAuthentication yes/' $SSHD_CONFIG
+
+    echo "🔄 正在重启 SSH 服务..."
+    if command -v systemctl &> /dev/null; then
+        systemctl restart ssh || systemctl restart sshd
+    else
+        service ssh restart || service sshd restart
+    fi
+
+    echo ""
+    echo "✅ 已关闭密码登录，仅允许密钥登录。"
+    echo "⚠️ 请确保你已经使用私钥成功连接测试过，否则将无法再次连接此 VPS！"
+    echo ""
+    read -p "按回车键返回菜单..." 
+}
+
 
 
 start_menu(){
@@ -362,6 +403,7 @@ start_menu(){
     ————密码管理————
   	15. 添加 SSH 公钥（Across2025_key）
 	16. 添加 SSH 端口 22
+ 	17. 检查公钥并关闭密码登录（仅限密钥登录）
 
 
     ————V2ray—————
@@ -410,8 +452,10 @@ start_menu(){
     12) X2rayR_script_install;;
     13) show_nodeid;;
     14) remove_all_docker_containers;;
+	
 	15) add_ssh_pubkey;;
  	16) add_ssh_port_22;;
+  	17) only_allow_ssh_key_login;;
     50) docker_deploy;;
     51) remove_ssrmu;;
     52) edit_new_cron;;
