@@ -324,6 +324,27 @@ X2rayR_script_install(){
     docker-compose up -d
 }
 
+# 添加 SSH 公钥（Across2025_key）
+add_ssh_pubkey() {
+    echo "🔐 正在配置 SSH 公钥登录..."
+
+    mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
+    touch ~/.ssh/authorized_keys
+    chmod 600 ~/.ssh/authorized_keys
+
+    PUBKEY='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDwCS28O1hFZ5FWA1YHkBbvULBLCU0diHh5udmEecJ7Y/9mrxZ8hRoOX239L//qw/UzvevEQOMKz129R0ykhyLCM6qQ+zx+7+fGx6EYmIBNhw2aI4aFhda/OqDR1i7eQMpj4JrweE7Eh8tqXpjgPggL3k9KsX3B/0D2pnOGIF/lzEoB3SdueuAGQWlAHBkTnafbV7y0deBa63xpIo5Pvzn4ZhjXqAuwBE7ocGFrEfePOTgvubRqV3+9NDPKu9Nvgynt5etd9dNYcfjYw2UxQuCclpR9L7zqYE7knVaHdJMDxsPkLlCMBxWpVmZicoS5yi7KVDboTbCBcdXcbEsZOhkW4reCZgyjqYWOhS8nAQY+jS3DcRKM/kfQXo2xhMYAX85eMjhlwXnj68OiKJBsQOKfGH6YEqE+rstBkZcCur/hu7KcrLWrLz9Cj4n+HWGEg+uD0MuijoJJelFT218Y+7bFxnDHx13HjxBZkIM1qarRfemZA8ZBMAhQn6xcVr4C0ZDd0UtgGV2upvEhtzBPgzNoUMROY5aPWL0ZjTZWQuzWHuLN+ZKHiKgenbrk3HOeinWSM0aI2kq1D8fyPaT6YQtMhcqeFBpeSyiMtK9Pj8Xl3zt7evxht34Z2qrhukZTJBrhQrspms046EQ9djX/7krn1lsCzz5EltMayzXxqwZ6iw== Across2025_key'
+
+    if grep -qxF "$PUBKEY" ~/.ssh/authorized_keys; then
+        echo "✅ 公钥已存在，无需重复添加。"
+    else
+        echo "$PUBKEY" >> ~/.ssh/authorized_keys
+        echo "✅ 公钥已成功添加至 ~/.ssh/authorized_keys"
+    fi
+
+    echo
+    read -p "按回车键继续..."
+}
 
 
 
@@ -337,7 +358,11 @@ start_menu(){
 
     ————系统设置————
     3. 设置 root 密码
-    4. 添加 SSH 端口 22
+	
+    ————密码管理————
+  	15. 添加 SSH 公钥（Across2025_key）
+	16. 添加 SSH 端口 22
+
 
     ————V2ray—————
     5. 安装v2ray-agent
@@ -355,6 +380,7 @@ start_menu(){
     13. 显示当前XrayR-script NodeID
     14. 删除全部 Docker 容器
 
+ 
     ————Legacy————
     50. 初次对接数据库
     51. 删除docker_ssrmu
@@ -363,7 +389,7 @@ start_menu(){
     54. 一键删除ssr
 
     ———————————————
-    99. 退出byebye13213123"
+    99. 退出"
    
 
     echo
@@ -373,7 +399,7 @@ start_menu(){
     1) date_setting;;
     2) download_bbr;;
     3) set_root_password;;
-    4) add_ssh_port_22;;
+    
     5) v2ray_sspanel_install;;
     6) install_docker;;
     7) download_dockercompose;;
@@ -384,6 +410,8 @@ start_menu(){
     12) X2rayR_script_install;;
     13) show_nodeid;;
     14) remove_all_docker_containers;;
+	15) add_ssh_pubkey;;
+ 	16) add_ssh_port_22;;
     50) docker_deploy;;
     51) remove_ssrmu;;
     52) edit_new_cron;;
