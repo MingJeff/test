@@ -352,8 +352,19 @@ add_ssh_pubkey() {
     fi
 
     echo
+    echo "🛠 正在启用 /etc/ssh/sshd_config 中的 PubkeyAuthentication..."
+
+    # 取消注释 "#PubkeyAuthentication yes"
+    sudo sed -i 's/^#\s*PubkeyAuthentication\s\+yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+
+    echo "🔁 重启 SSH 服务以生效..."
+    sudo systemctl restart ssh || sudo systemctl restart sshd
+
+    echo "✅ 公钥认证功能已启用。"
+    echo
     read -p "按回车键继续..."
 }
+
 
 # 判断是否只允许密钥登录
 only_allow_ssh_key_login() {
@@ -365,6 +376,27 @@ only_allow_ssh_key_login() {
     fi
 
     echo "✅ 已检测到公钥，当前文件为 ~/.ssh/authorized_keys"
+    echo
+
+    SSHD_CONFIG="/etc/ssh/sshd_config"
+
+    # 检查 PubkeyAuthentication 状态
+    PUBKEY_LINE=$(grep -E "^\s*#?\s*PubkeyAuthentication" "$SSHD_CONFIG" | tail -n 1)
+    if echo "$PUBKEY_LINE" | grep -Eq '^\s*PubkeyAuthentication\s+yes'; then
+        echo -e "🟢 \033[0;32mPubkeyAuthentication 已启用（$PUBKEY_LINE）\033[0m"
+    else
+        echo -e "🔴 \033[0;31mPubkeyAuthentication 未启用（$PUBKEY_LINE）\033[0m"
+    fi
+
+    # 检查 PasswordAuthentication 状态
+    PASSWD_LINE=$(grep -E "^\s*#?\s*PasswordAuthentication" "$SSHD_CONFIG" | tail -n 1)
+    if echo "$PASSWD_LINE" | grep -Eq '^\s*PasswordAuthentication\s+yes'; then
+        echo -e "🟢 \033[0;32mPasswordAuthentication 已启用（$PASSWD_LINE）\033[0m"
+    else
+        echo -e "🔴 \033[0;31mPasswordAuthentication 未启用（$PASSWD_LINE）\033[0m"
+    fi
+
+    echo
     echo "是否要关闭密码登录，仅保留密钥登录？（谨慎操作，确保你已经测试过密钥可以登录）"
     echo "1. 是，只允许密钥登录"
     echo "2. 否，保留密码登录"
@@ -375,12 +407,11 @@ only_allow_ssh_key_login() {
         return
     fi
 
-    SSHD_CONFIG="/etc/ssh/sshd_config"
-    cp $SSHD_CONFIG ${SSHD_CONFIG}.bak
+    cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak"
 
-    sed -i 's/^#\?\s*PasswordAuthentication.*/PasswordAuthentication no/' $SSHD_CONFIG
-    sed -i 's/^#\?\s*PermitRootLogin.*/PermitRootLogin prohibit-password/' $SSHD_CONFIG
-    sed -i 's/^#\?\s*PubkeyAuthentication.*/PubkeyAuthentication yes/' $SSHD_CONFIG
+    sed -i 's/^#\?\s*PasswordAuthentication.*/PasswordAuthentication no/' "$SSHD_CONFIG"
+    sed -i 's/^#\?\s*PermitRootLogin.*/PermitRootLogin prohibit-password/' "$SSHD_CONFIG"
+    sed -i 's/^#\?\s*PubkeyAuthentication.*/PubkeyAuthentication yes/' "$SSHD_CONFIG"
 
     echo "🔄 正在重启 SSH 服务..."
     if command -v systemctl &> /dev/null; then
@@ -389,10 +420,10 @@ only_allow_ssh_key_login() {
         service ssh restart || service sshd restart
     fi
 
-    echo ""
+    echo
     echo "✅ 已关闭密码登录，仅允许密钥登录。"
     echo "⚠️ 请确保你已经使用私钥成功连接测试过，否则将无法再次连接此 VPS！"
-    echo ""
+    echo
     read -p "按回车键返回菜单..." 
 }
 
