@@ -118,25 +118,34 @@ set_root_password(){
 
 # 添加 SSH 端口 22
 add_ssh_port_22(){
+
     SSHD_CONFIG="/etc/ssh/sshd_config"
-    cp $SSHD_CONFIG ${SSHD_CONFIG}.bak
+
+    # 备份配置文件
+    cp $SSHD_CONFIG ${SSHD_CONFIG}.bak.$(date +%F_%T)
+
+    # 确保允许 root 和密码登录（可选）
     sed -i 's/^#\?\s*PermitRootLogin.*/PermitRootLogin yes/' $SSHD_CONFIG
     sed -i 's/^#\?\s*PasswordAuthentication.*/PasswordAuthentication yes/' $SSHD_CONFIG
-    if ! grep -q "^Port 22" $SSHD_CONFIG; then
-        echo "Port 22" >> $SSHD_CONFIG
+
+    # 确保有 Port 22，没有就追加
+    if ! grep -qE '^[[:space:]]*Port[[:space:]]+22([[:space:]]|$)' $SSHD_CONFIG; then
+        echo "Port 22" | tee -a $SSHD_CONFIG >/dev/null
         echo "已添加 Port 22"
     else
         echo "Port 22 已存在，未重复添加。"
     fi
 
+    # 重启 ssh 服务
     if command -v systemctl &> /dev/null; then
-        systemctl restart ssh || systemctl restart sshd
+        systemctl restart sshd || systemctl restart ssh
     else
-        service ssh restart || service sshd restart
+        service sshd restart || service ssh restart
     fi
 
     echo "SSH 服务已重启完成，可使用原端口或 22 登录。"
 }
+
 
 # 一键删除所有 Docker 容器
 remove_all_docker_containers() {
