@@ -175,19 +175,13 @@ install_docker() {
 
     if [[ "$OS_VERSION" == "16.04" ]]; then
         echo "⚠️ 检测到 Ubuntu 16.04，使用兼容模式安装 Docker + Compose"
-
         apt update -y
         apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
         add-apt-repository \
-           "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-           xenial \
-           stable"
-
+           "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
         apt update -y
-
         apt install -y docker-ce=5:18.09.7~3-0~ubuntu-xenial \
                        docker-ce-cli=5:18.09.7~3-0~ubuntu-xenial \
                        containerd.io
@@ -199,21 +193,20 @@ install_docker() {
             -o /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
 
-        echo ""
-        echo "✅ Ubuntu 16.04 安装完成，Docker 与 docker-compose 已就绪。"
+        echo "✅ Ubuntu 16.04 安装完成，使用 docker-compose -v 验证"
 
     else
-        echo "🟢 检测到系统版本为 $OS_VERSION，使用标准流程安装 Docker + Compose"
-
+        echo "🟢 检测到 Ubuntu $OS_VERSION，使用标准流程安装 Docker + Compose"
         apt update -y
-        apt install -y ca-certificates curl gnupg lsb-release apt-transport-https
+        apt install -y ca-certificates curl gnupg lsb-release apt-transport-https gpg
 
         mkdir -p /etc/apt/keyrings
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
         echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+        https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+        | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
         apt update -y
         apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
@@ -221,11 +214,25 @@ install_docker() {
         systemctl enable docker
         systemctl start docker
 
-        echo ""
-        echo "✅ Docker 和 docker compose 安装完成"
+        echo "✅ Docker 和 docker compose 安装完成，请用 docker compose version 验证"
     fi
 }
 
+
+download_dockercompose() {
+    mkdir -p proxy
+    cd proxy || exit
+
+    # 下载 docker-compose.yaml
+    wget -N --no-check-certificate \
+      "https://raw.github.com/MingJeff/test/Across/docker-compose.yaml" \
+      -O docker-compose.yaml
+
+    chmod 644 docker-compose.yaml
+
+    echo "✅ docker-compose.yaml 已下载到 $(pwd)/docker-compose.yaml"
+    cd ..
+}
 
 
 
@@ -290,11 +297,7 @@ v2ray_sspanel_install(){
 
 
 
-download_dockercompose(){
-	mkdir proxy
-	cd proxy
-	wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/docker-compose.yaml" && chmod 777 docker-compose.yaml
-}
+
 	
 download_XrayR(){
 	cd ~/proxy
