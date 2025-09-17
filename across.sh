@@ -333,17 +333,28 @@ X2rayR_script_install(){
         apt-get update && apt-get install git -y
     fi
 
+    # 克隆脚本仓库
     git clone https://github.com/Miku-Miku-Miku-Miku/XrayR-script
-    cd XrayR-script/config
+    cd XrayR-script/config || exit
 
-    wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/config.yml" && chmod 777 config.yml
+    # 下载配置文件
+    wget -N --no-check-certificate "https://raw.github.com/MingJeff/test/Across/config.yml" -O config.yml
+    chmod 644 config.yml
 
+    # 替换节点 ID
     read -p "Please assign the node ID 请输入节点ID:" node_idof 
-    sed -i 's/10086/'$node_idof'/g' config.yml
+    sed -i "s/10086/${node_idof}/g" config.yml
 
     cd ..
-    docker-compose up -d
+
+    # 判断使用 docker-compose 还是 docker compose
+    if command -v docker-compose &> /dev/null; then
+        docker-compose up -d
+    else
+        docker compose up -d
+    fi
 }
+
 
 # 添加 SSH 公钥（Across2025_key）
 add_ssh_pubkey() {
