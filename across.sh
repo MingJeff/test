@@ -465,12 +465,12 @@ start_menu(){
 	
     ————密码管理————
 	15. 添加 SSH 公钥（Across2025_key）
- 	16. 添加 SSH 端口 22
-  	17. 检查公钥并关闭密码登录（仅限密钥登录）
+	16. 添加 SSH 端口 22
+	17. 检查公钥并关闭密码登录（仅限密钥登录）
 
 
     ————V2ray—————
-    5. 安装v2ray-agent
+	5. 安装v2ray-agent
 
     ————Docker—————
     6. 安装docker& docker-compose
