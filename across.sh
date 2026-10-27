@@ -169,54 +169,167 @@ download_bbr(){
 }
 
 
-# 同时安装 Docker 和 Docker Compose
+
+# 安装 Docker Engine + Docker Compose V2
 install_docker() {
-    OS_VERSION=$(lsb_release -rs)
+    (
+        set -euo pipefail
 
-    if [[ "$OS_VERSION" == "16.04" ]]; then
-        echo "⚠️ 检测到 Ubuntu 16.04，使用兼容模式安装 Docker + Compose"
-        apt update -y
-        apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+        echo "========== Docker 安装开始 =========="
 
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-        add-apt-repository \
-           "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
-        apt update -y
-        apt install -y docker-ce=5:18.09.7~3-0~ubuntu-xenial \
-                       docker-ce-cli=5:18.09.7~3-0~ubuntu-xenial \
-                       containerd.io
+        # 1. 检查 root 权限
+        if [ "$(id -u)" -ne 0 ]; then
+            echo "❌ 请使用 root 用户运行此脚本"
+            return 1
+        fi
 
-        service docker start || systemctl start docker
+        # 2. 识别操作系统
+        if [ ! -f /etc/os-release ]; then
+            echo "❌ 无法识别操作系统"
+            return 1
+        fi
 
-        COMPOSE_VERSION="1.29.2"
-        curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
-            -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
+        . /etc/os-release
 
-        echo "✅ Ubuntu 16.04 安装完成，使用 docker-compose -v 验证"
+        case "$ID" in
+            debian)
+                DOCKER_OS="debian"
+                CODENAME="$VERSION_CODENAME"
+                case "$CODENAME" in
+                    bookworm|trixie) ;;
+                    *)
+                        echo "❌ 当前 Debian 版本未列入支持范围"
+                        return 1
+                        ;;
+                esac
+                ;;
+            ubuntu)
+                DOCKER_OS="ubuntu"
+                CODENAME="${UBUNTU_CODENAME:-$VERSION_CODENAME}"
+                case "$CODENAME" in
+                    jammy|noble|resolute) ;;
+                    *)
+                        echo "❌ 当前 Ubuntu 版本未列入支持范围"
+                        return 1
+                        ;;
+                esac
+                ;;
+            *)
+                echo "❌ 暂不支持此系统: $ID"
+                return 1
+                ;;
+        esac
 
-    else
-        echo "🟢 检测到 Ubuntu $OS_VERSION，使用标准流程安装 Docker + Compose"
-        apt update -y
-        apt install -y ca-certificates curl gnupg lsb-release apt-transport-https gpg
+        ARCH=$(dpkg --print-architecture)
 
-        mkdir -p /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        echo "✅ 系统: $PRETTY_NAME"
+        echo "✅ 架构: $ARCH"
+        echo "✅ 软件源: $DOCKER_OS / $CODENAME"
 
-        echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
-        | tee /etc/apt/sources.list.d/docker.list > /dev/null
+        # 3. 判断是否已经安装并运行
+        if command -v docker >/dev/null 2>&1; then
+            if docker info >/dev/null 2>&1 &&
+               docker compose version >/dev/null 2>&1; then
+                echo "✅ Docker 和 Compose 已安装且运行正常"
+                docker --version
+                docker compose version
+                return 0
+            fi
+            echo "⚠️ 检测到 Docker，但服务或 Compose 不完整，尝试修复"
+        fi
 
-        apt update -y
-        apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        # 4. 安装必要依赖
+        apt-get update
+        apt-get install -y ca-certificates curl
 
-        systemctl enable docker
-        systemctl start docker
+        # 5. 配置 Docker 官方 GPG 密钥
+        install -m 0755 -d /etc/apt/keyrings
 
-        echo "✅ Docker 和 docker compose 安装完成，请用 docker compose version 验证"
-    fi
+        curl --fail --show-error --silent --location \
+            --retry 3 \
+            "https://download.docker.com/linux/${DOCKER_OS}/gpg" \
+            -o /etc/apt/keyrings/docker.asc
+
+        chmod a+r /etc/apt/keyrings/docker.asc
+
+        # 6. 检查旧版软件源，避免 Signed-By 冲突
+        if [ -f /etc/apt/sources.list.d/docker.list ]; then
+            echo "⚠️ 检测到旧版 docker.list"
+            mv /etc/apt/sources.list.d/docker.list \
+               /etc/apt/sources.list.d/docker.list.bak
+        fi
+
+        # 7. 写入 Docker 官方软件源
+        cat > /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/${DOCKER_OS}
+Suites: ${CODENAME}
+Components: stable
+Architectures: ${ARCH}
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+        # 8. 更新软件包索引
+        apt-get update
+
+        # 检查 Docker 软件包是否可用
+        CANDIDATE=$(apt-cache policy docker-ce |
+                    awk '/Candidate:/ {print $2}')
+
+        if [ -z "$CANDIDATE" ] || [ "$CANDIDATE" = "(none)" ]; then
+            echo "❌ Docker 软件包不可用，请检查仓库配置和网络"
+            return 1
+        fi
+
+        echo "✅ 可安装 Docker 版本: $CANDIDATE"
+
+        # 9. 检查可能冲突的旧版软件包
+        CONFLICTS=()
+        for pkg in \
+            docker.io docker-compose docker-compose-v2 \
+            docker-doc docker-buildx podman-docker \
+            containerd runc; do
+            if dpkg-query -W -f='${db:Status-Abbrev}' "$pkg" \
+                2>/dev/null | grep -q '^ii'; then
+                CONFLICTS+=("$pkg")
+            fi
+        done
+
+        if [ "${#CONFLICTS[@]}" -gt 0 ]; then
+            echo "❌ 检测到可能冲突的软件包: ${CONFLICTS[*]}"
+            echo "请先确认这些软件包是否被其他服务使用。"
+            echo "本脚本不会自动卸载现有软件。"
+            return 1
+        fi
+
+        # 10. 安装 Docker Engine + Compose V2
+        apt-get install -y \
+            docker-ce \
+            docker-ce-cli \
+            containerd.io \
+            docker-buildx-plugin \
+            docker-compose-plugin
+
+        # 11. 启动并设置开机自启
+        systemctl enable --now docker
+
+        # 12. 验证
+        echo "========== 安装验证 =========="
+
+        docker --version
+        docker compose version
+
+        if docker info >/dev/null 2>&1; then
+            echo "✅ Docker Engine 运行正常"
+        else
+            echo "❌ Docker Engine 未正常运行"
+            return 1
+        fi
+
+        echo "🎉 Docker + Docker Compose 安装成功！"
+    )
 }
+
 
 
 download_dockercompose() {
